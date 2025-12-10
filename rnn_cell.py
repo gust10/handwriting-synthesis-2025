@@ -2,6 +2,7 @@ from collections import namedtuple
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
+from tensorflow.python.ops import rnn_cell_impl
 import tensorflow_probability as tfp
 tfd = tfp.distributions
 import numpy as np
@@ -15,7 +16,7 @@ LSTMAttentionCellState = namedtuple(
 )
 
 
-class LSTMAttentionCell(tf.nn.rnn_cell.RNNCell):
+class LSTMAttentionCell(rnn_cell_impl.RNNCell):
 
     def __init__(
         self,
@@ -79,7 +80,7 @@ class LSTMAttentionCell(tf.nn.rnn_cell.RNNCell):
 
             # lstm 1
             s1_in = tf.concat([state.w, inputs], axis=1)
-            cell1 = tf.compat.v1.nn.rnn_cell.LSTMCell(self.lstm_size)
+            cell1 = rnn_cell_impl.LSTMCell(self.lstm_size)
             s1_out, s1_state = cell1(s1_in, state=(state.c1, state.h1))
 
             # attention
@@ -103,12 +104,12 @@ class LSTMAttentionCell(tf.nn.rnn_cell.RNNCell):
 
             # lstm 2
             s2_in = tf.concat([inputs, s1_out, w], axis=1)
-            cell2 = tf.compat.v1.nn.rnn_cell.LSTMCell(self.lstm_size)
+            cell2 = rnn_cell_impl.LSTMCell(self.lstm_size)
             s2_out, s2_state = cell2(s2_in, state=(state.c2, state.h2))
 
             # lstm 3
             s3_in = tf.concat([inputs, s2_out, w], axis=1)
-            cell3 = tf.compat.v1.nn.rnn_cell.LSTMCell(self.lstm_size)
+            cell3 = rnn_cell_impl.LSTMCell(self.lstm_size)
             s3_out, s3_state = cell3(s3_in, state=(state.c3, state.h3))
 
             new_state = LSTMAttentionCellState(
